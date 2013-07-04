@@ -32,6 +32,8 @@ function onVizData(topic, eventData) {
   displayAndWait();
 }
 
+vdd.wamp.connect(onVizData);
+
 function displayData(iterationData) {
   console.log("Displaying data", iterationData);
 

@@ -13,12 +13,8 @@
   (vdd/stop-viz viz-server)
   
   (use 'sorter.core)
-  (viz-qsort (shuffle (range 20)))
-  
-  (use 'clj-wamp.server)
-  (use 'vdd-core.internal.websocket)
-  (send-event! (evt-url "vizdata") 5)
-  
+  (viz-qsort (shuffle (range 50)))
+
   (use 'vdd-core.capture-global)
   (captured)
 )
