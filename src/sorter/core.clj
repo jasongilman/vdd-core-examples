@@ -30,12 +30,13 @@
   ; Reset the global captured state
   (reset-captured!)
   ; Run quicksort. Visualization data will be captured
-  (doall (qsort data))
-  (let [c (captured)
+  (let [results (doall (qsort data))
+        c (captured)
         combined (qsort-list-combiner c)
         ; Prepend the unsorted data
-        combined (concat [{:items data}]
-                         combined)]
+        combined (concat [{:items data :left [] :right []}]
+                         combined
+                         [{:items results :left [] :right []}])]
     ; Send the data to be visualized
     ; TODO need to determine if we really need multiple channels
     (vdd/data->viz "vizdata" combined)))
@@ -47,7 +48,8 @@
     (let [smaller #(< % pivot)
           before-pivot (filter smaller xs)
           after-pivot (remove smaller xs)]
-      (capture! {:left before-pivot 
+      (capture! {:before (concat [pivot] xs)
+                 :left before-pivot 
                  :pivot pivot 
                  :right after-pivot})
       (lazy-cat (qsort before-pivot)
@@ -70,7 +72,7 @@
 ; We want to show only the active data at any particular time. We should be able to send the the pieces
 ; of the component data to visualize without having to squash everything together
 (defn qsort-list-combiner
-  "Combines togehter the captured maps from quicksort to make it easier to display"
+  "Combines together the captured maps from quicksort to make it easier to display"
   [[top & others]]
   (if top
     (let [curr-left (:left top)
@@ -85,7 +87,7 @@
           lefts (qsort-list-combiner lefts)
           rights (qsort-list-combiner rights)
           
-          ; We only want to prepend the sorted items to the right side so we grabe the last left side
+          ; We only want to prepend the sorted items to the right side so we grab the last left side
           ; which should be completely sorted.
           last-left (last lefts)
           last-left (or (:items last-left) [])
@@ -96,7 +98,7 @@
           ; Prepend the last left and pivot to the left recursed items
           rights (map #(update-in % [:items] (fn [v] (concat last-left [curr-pivot] v))) rights)]
       (concat
-        [{:items (concat curr-left [curr-pivot] curr-right) :pivot curr-pivot}]
+        [(assoc top :items (concat curr-left [curr-pivot] curr-right))]
         lefts
         rights))
     []))

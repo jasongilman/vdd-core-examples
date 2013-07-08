@@ -39,6 +39,8 @@ function displayData(iterationData) {
 
   var pivot = iterationData.pivot;
   var items = iterationData.items;
+  var lefts = iterationData.left;
+  var rights = iterationData.right;
 
   //Update scale domains
   xScale.domain(d3.range(items.length));
@@ -47,6 +49,12 @@ function displayData(iterationData) {
   var colorSelector = function(d) {
     if (d == pivot) {
       return "red";
+    }
+    else if (lefts.indexOf(d) != -1){
+      return "green";
+    }
+    else if (rights.indexOf(d) != -1){
+      return "green";
     }
     else {
       return "steelblue";
