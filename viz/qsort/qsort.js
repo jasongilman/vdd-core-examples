@@ -1,8 +1,11 @@
 // From http://mbostock.github.io/d3/tutorial/bar-2.html
 // See also http://mbostock.github.io/d3/tutorial/bar-1.html
 
+// Creates a player control inside the player div. The function returned can be used to 
+// set the data of the player and the function handler.
+var playerUpdateFn = vdd.player.createPlayerFn($("div#player"));
+
 var h = 400;
-// TODO make width change with the window width
 var w = 800;
 
 var chart = d3.select("svg.chart")
@@ -20,16 +23,8 @@ var yScale = d3.scale.linear()
 
 function onVizData(topic, eventData) {
   console.log("visualization data received", eventData);
-  var displayAndWait = function() {
-    displayData(eventData.shift());
-    if (eventData.length > 0) {
-      setTimeout(displayAndWait, duration);
-    }
-    else {
-      console.log("Completed animation");
-    }
-  }
-  displayAndWait();
+  // Sets the event data and the handler function.
+  playerUpdateFn(eventData, displayData);
 }
 
 vdd.wamp.connect(onVizData);
