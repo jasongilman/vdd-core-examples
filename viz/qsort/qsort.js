@@ -1,6 +1,3 @@
-// From http://mbostock.github.io/d3/tutorial/bar-2.html
-// See also http://mbostock.github.io/d3/tutorial/bar-1.html
-
 // Creates a player control inside the player div. The function returned can be used to 
 // set the data of the player and the function handler.
 var playerUpdateFn = vdd.player.createPlayerFn($("div#player"));
@@ -9,7 +6,6 @@ var h = 400;
 var w = 800;
 
 var chart = d3.select("svg.chart")
-// 90% would make it scale with the width but we would have to handle that with the xscale as well
   .attr("width", w) 
   .attr("height", h);
 
@@ -21,14 +17,17 @@ var xScale = d3.scale.ordinal()
 var yScale = d3.scale.linear()
   .range([20, h]);
 
+// Handles receiving visualization data through WAMP.
 function onVizData(topic, eventData) {
   console.log("visualization data received", eventData);
   // Sets the event data and the handler function.
   playerUpdateFn(eventData, displayData);
 }
 
+// Connect using the WAMP protocol and register callback for visualization data
 vdd.wamp.connect(onVizData);
 
+// Displays one iteration's worth of data.
 function displayData(iterationData) {
   console.log("Displaying data", iterationData);
 
