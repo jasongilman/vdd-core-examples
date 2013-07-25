@@ -13,7 +13,7 @@
   (vdd/stop-viz viz-server)
   
   (use 'sorter.core)
-  (viz-qsort (shuffle (range 20)))
+  (viz-qsort (shuffle (range 50)))
 
   (use 'vdd-core.capture-global)
   (captured)
@@ -38,7 +38,6 @@
                          combined
                          [{:items results :left [] :right []}])]
     ; Send the data to be visualized
-    ; TODO need to determine if we really need multiple channels
     (vdd/data->viz "vizdata" combined)))
 
 
@@ -48,8 +47,7 @@
     (let [smaller #(< % pivot)
           before-pivot (filter smaller xs)
           after-pivot (remove smaller xs)]
-      (capture! {:before (concat [pivot] xs)
-                 :left before-pivot 
+      (capture! {:left before-pivot 
                  :pivot pivot 
                  :right after-pivot})
       (lazy-cat (qsort before-pivot)

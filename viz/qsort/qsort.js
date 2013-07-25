@@ -17,7 +17,7 @@ var chart = d3.select("svg.chart")
 var duration = 200;
 
 var xScale = d3.scale.ordinal()
-  .rangeRoundBands([0, w], 0.05);
+  .rangeRoundBands([0, w], 0.05, 0);
 var yScale = d3.scale.linear()
   .range([20, h]);
 
