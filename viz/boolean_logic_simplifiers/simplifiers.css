@@ -1,0 +1,20 @@
+svg.chart {
+  border: 1px solid black;
+}
+
+textarea {
+  height: 5em;
+  width: 400px;
+}
+
+circle.node {
+  cursor: pointer;
+  stroke: #3182bd;
+  stroke-width: 1.5px;
+}
+
+line.link {
+  fill: none;
+  stroke: #9ecae1;
+  stroke-width: 1.5px;
+}

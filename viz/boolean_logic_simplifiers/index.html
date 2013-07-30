@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Boolean Logic Simplifier Example</title>
+  <link href="/jquery-ui/jquery-ui.min.css" rel="stylesheet">
+  <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+  <link href="/vdd/vdd.css" rel="stylesheet">
+  <link href="/viz/boolean_logic_simplifiers/simplifiers.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>Boolean Logic Simplifiers</h1>
+    <textarea name="logic-text">(and (= x 5) (= z 7))</textarea>
+    <a href="#" id="submit-logic-text" class="btn">Submit</a>
+    <!-- Visualization will be drawn in this -->
+    <svg class="chart" />
+    <div id="player" />
+  </div>
+
+  <!-- These libraries are required for using vdd-core. -->
+  <script src="/jquery/jquery.min.js"></script>
+  <script src="/jquery-ui/jquery-ui.min.js"></script>
+  <script src="/autobahn/autobahn.min.js"></script>
+  <script src="/vdd/vdd-core.js"></script>
+
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <!-- the visualization javascript -->
+  <script src="/viz/boolean_logic_simplifiers/simplifiers.js"></script>
+  
+</body>
+</html>
