@@ -27,7 +27,7 @@
                          combined
                          [{:items results :left [] :right []}])]
     ; Send the data to be visualized
-    (vdd/data->viz "vizdata" combined)))
+    (vdd/data->viz combined)))
 
 ; This is a little convoluted. The qsort algorithm in clojure is recursive so it only looks at a portion of the list
 ; at a time. I wanted the entire list to be displayed in the visualization so this keeps track of the results
