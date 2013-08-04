@@ -8,8 +8,7 @@
 
 (comment
   ; You need to run this code after resetting the repl
-  (require 'boolean-logic-simplifiers.driver)
-  (boolean-logic-simplifiers.driver/enable-viz)
+  (enable-viz)
 )
 
 (comment 
@@ -33,55 +32,56 @@
 )
 
 (defmulti cond->node 
-  "TODO"
-  (fn [condition] (first condition)))
+  "Multimethod to convert a condition into a single node. Does not handle adding child nodes"
+  (fn [condition depth] (first condition)))
 
 (defmethod cond->node :and
-  [condition]
-  {:title "and"})
+  [[type & parts] depth]
+  {:title "and" :depth depth :type type})
 
 (defmethod cond->node :or
-  [condition]
-  {:title "or"})
+  [[type & parts] depth]
+  {:title "or" :depth depth :type type})
 
 (defmethod cond->node :eq
-  [[_ n1 n2]]
-  {:title (format "%s = %s" n1 n2)})
+  [[type n1 n2] depth]
+  {:title (format "%s = %s" n1 n2) :depth depth :type type})
 
 (defn- add-node 
   "TODO"
-  [nodes-and-links condition parent-index]
-  (let [new-node (cond->node condition)
-        nodes-and-links (update-in nodes-and-links [:nodes] conj new-node)
+  [nodes-and-links new-node parent-index]
+  (let [nodes-and-links (update-in nodes-and-links [:nodes] conj new-node)
         new-node-index (-> nodes-and-links :nodes count dec)
         link {:source parent-index :target new-node-index}]
     (update-in nodes-and-links [:links] conj link)))
 
 (defmulti add-condition-child-nodes-and-links
   "TODO"
-  (fn [condition nodes-and-links cond-index] (first condition)))
+  (fn [condition nodes-and-links cond-index depth] (first condition)))
 
 (defn add-group-condition-links
   "TODO"
-  [[_ & conditions] nodes-and-links cond-index]
-  (reduce (fn [nodes-and-links condition]
-            (let [nodes-and-links (add-node nodes-and-links condition cond-index)
-                  ; TODO remove duplication of determining this here and in add-node
-                  new-node-index (-> nodes-and-links :nodes count dec)]
-              (add-condition-child-nodes-and-links condition nodes-and-links new-node-index)))
-          nodes-and-links
-          conditions))
+  [[_ & conditions] nodes-and-links cond-index depth]
+  (let [depth (inc depth)]
+    (reduce (fn [nodes-and-links condition]
+              (let [new-node (cond->node condition depth)
+                    nodes-and-links (add-node nodes-and-links new-node cond-index)
+                    ; TODO remove duplication of determining this here and in add-node
+                    new-node-index (-> nodes-and-links :nodes count dec)]
+                (add-condition-child-nodes-and-links condition nodes-and-links new-node-index depth)))
+            nodes-and-links
+            conditions)))
 
 (defmethod add-condition-child-nodes-and-links :and
-  [condition nodes-and-links cond-index]
-  (add-group-condition-links condition nodes-and-links cond-index))
+  [condition nodes-and-links cond-index depth]
+  (add-group-condition-links condition nodes-and-links cond-index depth))
 
 (defmethod add-condition-child-nodes-and-links :or
-  [condition nodes-and-links cond-index]
-  (add-group-condition-links condition nodes-and-links cond-index))
+  [condition nodes-and-links cond-index depth]
+  (add-group-condition-links condition nodes-and-links cond-index depth))
 
 (defmethod add-condition-child-nodes-and-links :eq
-  [condition nodes-and-links cond-index]
+  [condition nodes-and-links cond-index depth]
   ; No need to add any links. Added by parent
   nodes-and-links)
 
@@ -90,9 +90,9 @@
 (defn condition->d3-nodes-and-links 
   "TODO"
   [condition]
-  (let [node (cond->node condition)
+  (let [node (cond->node condition 1)
         nodes-and-links {:nodes [node] :links []}]
-    (add-condition-child-nodes-and-links condition nodes-and-links 0)))
+    (add-condition-child-nodes-and-links condition nodes-and-links 0 1)))
 
 (comment 
 
