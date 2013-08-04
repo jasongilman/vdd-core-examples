@@ -5,7 +5,8 @@
 
 
 (comment
-  (use 'qsort.driver)
+  (require 'qsort.driver)
+  (def server (vdd/start-viz))
   (viz-qsort (shuffle (range 50)))
 )
 
