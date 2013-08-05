@@ -7,11 +7,45 @@ textarea {
   width: 400px;
 }
 
-circle.node {
+g.node {
+  cursor: pointer;
+}
+
+g.or-type circle {
+  fill: white;
+  stroke-width: 2px;
+  stroke: red;
+}
+g.or-type text {
+  font-style: san-serif;
+  /*font-weight: bold;*/
+  fill: black;
+}
+
+g.and-type circle {
+  fill: white;
+  stroke-width: 2px;
+  stroke: blue;
+}
+g.and-type text {
+  fill: black;
+  font-style: san-serif;
+  /*font-weight: bold;*/
+}
+
+g.eq-type circle {
+  fill: white;
+}
+g.eq-type text {
+  fill: black;
+}
+
+
+/*circle.node {
   cursor: pointer;
   stroke: #3182bd;
   stroke-width: 1.5px;
-}
+} */
 
 line.link {
   fill: none;

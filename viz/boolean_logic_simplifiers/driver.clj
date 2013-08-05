@@ -37,11 +37,11 @@
 
 (defmethod cond->node :and
   [[type & parts] depth]
-  {:title "and" :depth depth :type type})
+  {:title "&" :depth depth :type type})
 
 (defmethod cond->node :or
   [[type & parts] depth]
-  {:title "or" :depth depth :type type})
+  {:title "||" :depth depth :type type})
 
 (defmethod cond->node :eq
   [[type n1 n2] depth]

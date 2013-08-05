@@ -51,37 +51,32 @@ var node,
     root;
 
 
+
 // Returns a function that can be passed to d3 which will look up attribute values 
 // by type
-// TODO change this to use CSS styling instead. Just put the node type as a 
+// TODO I couldn't figure out how to get css styling to work on svg elements. I would only get errors like undefined property names.
 function attribFunction(submapName, attribute) {
   // A map of node type to circle and text settings
   
   var typeSettings = {or: {circle: {cx: 0,
                                     cy: 0,
-                                    r: 10,
-                                    fill: "green"},
+                                    r: 12},
 
-                           text: {fill: "white", 
-                                  dx: "-0.45em",
+                           text: {dx: "-3px",
                                   dy: "4px"}},
 
                       and: {circle: {cx: 0,
                                      cy: 0,
-                                     r: 15,
-                                     fill: "blue"},
+                                     r: 12},
 
-                            text: {fill: "white", 
-                                   dx: "-13px",
+                            text: {dx: "-5px",
                                    dy: "5px"}},
 
                       eq:  {circle: {cx: 0,
                                      cy: 0,
-                                     r: 0,
-                                     fill: "white"},
+                                     r: 0},
 
-                            text: {fill: "black", 
-                                   dx: "-0.75em",
+                            text: {dx: "-0.75em",
                                    dy: "5px"}}};
 
   return function(d) { return typeSettings[d.type][submapName][attribute]; };
@@ -125,22 +120,17 @@ function displayData(iterationData) {
 
   // Enter any new nodes.
   node.enter().append("g")
-      .attr("class", "node")
+      .attr("class", function(d) { return d.type + "-type node"})
       .call(force.drag);
 
   node.append("circle")
       .attr("cx", attribFunction("circle", "cx"))
       .attr("cy", attribFunction("circle", "cy"))
-      .attr("r", attribFunction("circle", "r"))
-      .style("fill", attribFunction("circle", "fill"));
-      // TODO Disabled for now
-      // .on("click", click)
+      .attr("r", attribFunction("circle", "r"));
 
-                           
   node.append("text")
       .attr("dx", attribFunction("text", "dx"))
       .attr("dy", attribFunction("text", "dy"))
-      .attr("fill", attribFunction("text", "fill"))
       .text(function(d) { return d.title });
 
   // Exit any old nodes.
