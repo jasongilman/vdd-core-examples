@@ -33,18 +33,20 @@ var w = 800;
 var vis = d3.select("svg.chart")
   .attr("width", w) 
   .attr("height", h);
+var linksGroup = vis.select("g.links");
+var nodesGroup = vis.select("g.nodes");
 
-  var force = d3.layout.force()
-    .gravity(0)
-    .distance(50)
-    .charge(function (node, index){
-      return -100;
-    })
-    .on("tick", tick)
-    .size([w, h]);
+var force = d3.layout.force()
+  .gravity(0)
+  .distance(50)
+  .charge(function (node, index){
+    return -100;
+  })
+  .on("tick", tick)
+  .size([w, h]);
 
 // Time duration in ms
-var duration = 200;
+var duration = 1000;
 
 var node,
     link,
@@ -100,11 +102,11 @@ function displayData(iterationData) {
       .start();
 
   // Update the links…
-  link = vis.selectAll("line.link")
+  link = linksGroup.selectAll("line.link")
       .data(iterationData.links); 
 
   // Enter any new links.
-  link.enter().insert("svg:line", ".node")
+  link.enter().append("svg:line")
       .attr("class", "link")
       .attr("x1", function(d) { return d.source.x; })
       .attr("y1", function(d) { return d.source.y; })
@@ -115,20 +117,35 @@ function displayData(iterationData) {
   link.exit().remove();
 
   // Update the nodes…
-  node = vis.selectAll("g.node")
+  node = nodesGroup.selectAll("g.node")
       .data(iterationData.nodes);
 
-  // Enter any new nodes.
-  node.enter().append("g")
-      .attr("class", function(d) { return d.type + "-type node"})
+   //Existing
+  node.attr("class", function(d) { return d.type + "-type node"})
       .call(force.drag);
 
-  node.append("circle")
+  node.select("circle")
       .attr("cx", attribFunction("circle", "cx"))
       .attr("cy", attribFunction("circle", "cy"))
       .attr("r", attribFunction("circle", "r"));
 
-  node.append("text")
+  node.select("text")
+      .attr("dx", attribFunction("text", "dx"))
+      .attr("dy", attribFunction("text", "dy"))
+      .text(function(d) { return d.title });
+
+
+  // Enter any new nodes.
+  newNodes = node.enter().append("g")
+      .attr("class", function(d) { return d.type + "-type node"})
+      .call(force.drag);
+
+  newNodes.append("circle")
+      .attr("cx", attribFunction("circle", "cx"))
+      .attr("cy", attribFunction("circle", "cy"))
+      .attr("r", attribFunction("circle", "r"));
+
+  newNodes.append("text")
       .attr("dx", attribFunction("text", "dx"))
       .attr("dy", attribFunction("text", "dy"))
       .text(function(d) { return d.title });
