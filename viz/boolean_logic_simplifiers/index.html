@@ -12,13 +12,13 @@
   <div class="container">
     <h1>Boolean Logic Simplifiers</h1>
     <textarea name="logic-text">
-[:or
-   [:and 
-    [:eq "a" 1]
-    [:eq "b" 2]]
-   [:and 
-    [:eq "x" 5]
-    [:eq "z" 7]]]
+(and 
+   (and 
+    (= "a" 1)
+    (= "b" 2))
+   (and 
+    (= "x" 5)
+    (= "z" 7)))
     </textarea>
     <a href="#" id="submit-logic-text" class="btn">Submit</a>
     <!-- Visualization will be drawn in this -->

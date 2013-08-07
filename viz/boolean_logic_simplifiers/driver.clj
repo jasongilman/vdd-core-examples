@@ -3,6 +3,7 @@
               :refer (debug info warn error)]
             [clojure.edn]
             [boolean-logic-simplifiers.core :as simplifiers]
+            [boolean-logic-simplifiers.factory :as factory]
             [vdd-core.core :as vdd]
             [vdd-core.capture-global :as capture]))
 
@@ -11,41 +12,21 @@
   (enable-viz)
 )
 
-(comment 
-(def sample [:and 
-             [:eq "x" 5]
-             [:eq "z" 7]])
-(def sample 
-  [:or
-   [:and 
-    [:eq "a" 1]
-    [:eq "b" 2]]
-   [:and 
-    [:eq "x" 5]
-    [:eq "z" 7]]])
-
-(first sample)
-(rest sample)
-
-(cond->node sample)
-(condition->d3-nodes-and-links sample)
-)
-
 (defmulti cond->node 
   "Multimethod to convert a condition into a single node. Does not handle adding child nodes"
-  (fn [condition depth] (first condition)))
+  (fn [condition depth] (:type condition)))
 
 (defmethod cond->node :and
-  [[type & parts] depth]
-  {:title "&" :depth depth :type type})
+  [_ depth]
+  {:title "&" :depth depth :type :and})
 
 (defmethod cond->node :or
-  [[type & parts] depth]
-  {:title "||" :depth depth :type type})
+  [_ depth]
+  {:title "||" :depth depth :type :or})
 
 (defmethod cond->node :eq
-  [[type n1 n2] depth]
-  {:title (format "%s = %s" n1 n2) :depth depth :type type})
+  [{v1 :value1 v2 :value2} depth]
+  {:title (format "%s = %s" v1 v2) :depth depth :type :eq})
 
 (defn- add-node 
   "TODO"
@@ -57,11 +38,11 @@
 
 (defmulti add-condition-child-nodes-and-links
   "TODO"
-  (fn [condition nodes-and-links cond-index depth] (first condition)))
+  (fn [condition nodes-and-links cond-index depth] (:type condition)))
 
 (defn add-group-condition-links
   "TODO"
-  [[_ & conditions] nodes-and-links cond-index depth]
+  [{conditions :conditions} nodes-and-links cond-index depth]
   (let [depth (inc depth)]
     (reduce (fn [nodes-and-links condition]
               (let [new-node (cond->node condition depth)
@@ -85,8 +66,6 @@
   ; No need to add any links. Added by parent
   nodes-and-links)
 
-
-
 (defn condition->d3-nodes-and-links 
   "TODO"
   [condition]
@@ -94,39 +73,20 @@
         nodes-and-links {:nodes [node] :links []}]
     (add-condition-child-nodes-and-links condition nodes-and-links 0 1)))
 
-(comment 
-
-  ; previous try
-  
-  
-
-  (defmulti condition->d3-nodes-and-links
-    "TODO"
-    (fn [condition nodes-and-links] (first condition)))
-
-  (defmethod condition->d3-nodes-and-links :and
-    [[type & conditions] nodes-and-links]
-    (let [and-node {:title "and"}
-          nodes-and-links (add-node nodes-and-links and-node)
-          and-node-index (-> nodes-and-links :nodes count dec)]
-      (reduce (fn [nodes-and-links condition]))
-     ))
-
-  (defmethod condition->d3-nodes-and-links :eq
-    [[_ & parts] nodes-and-links]
-    (add-node {:title (apply format "%s=%s" parts)}))
-
-) ; end of comment
-
 (defn- test-simplifiers
   [logic-str]
   (debug "Data received:" logic-str)
-  (let [root-cond (clojure.edn/read-string logic-str)
+  (let [root-cond (factory/string->condition logic-str)
         simplified (simplifiers/simplify root-cond)
         ; TODO get captured here then prepend root-cond and append simplified
         conditions [root-cond simplified]
         conditions (map condition->d3-nodes-and-links conditions)]
     (vdd/data->viz conditions)))
+
+(comment
+  (factory/string->condition "(and (= :x 1) (= :z 2))")
+  (test-simplifiers "(and (= :x 1) (= :z 2))")
+  )
 
 (defn enable-viz 
   []
