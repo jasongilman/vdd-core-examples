@@ -9,6 +9,7 @@
 
 (comment
   ; You need to run this code after resetting the repl
+  (require 'boolean-logic-simplifiers.driver)
   (enable-viz)
 )
 
