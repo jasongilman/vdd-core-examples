@@ -1,6 +1,9 @@
+// Time duration in ms
+var duration = 300;
+
 // Creates a player control inside the player div. The function returned can be used to 
 // set the data of the player and the function handler.
-var playerUpdateFn = vdd.player.createPlayerFn($("div#player"));
+var playerUpdateFn = vdd.player.createPlayerFn($("div#player"), {duration: duration - 50});
 
 var h = 400;
 var w = 800;
@@ -9,8 +12,6 @@ var chart = d3.select("svg.chart")
   .attr("width", w) 
   .attr("height", h);
 
-// Time duration in ms
-var duration = 200;
 
 var xScale = d3.scale.ordinal()
   .rangeRoundBands([0, w], 0.05, 0);
