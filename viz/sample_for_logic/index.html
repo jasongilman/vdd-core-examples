@@ -66,15 +66,33 @@ function transition() {
   var node1 = nodeWithId(1);
   var node4 = nodeWithId(4);
 
-  //for now just move node5 from node4 to node1
-  node1.children.push(node5);
-  var index = node4.children.indexOf(node5);
-  node4.children.splice(index, 1);
+  // for now just move node5 from node4 to node1
+  // node1.children.push(node5);
+  // var index = node4.children.indexOf(node5);
+  // node4.children.splice(index, 1);
+  // update(root);
+
+  moveNode(5, 1);
+  moveNode(6, 1);
+  removeNode(4);
   update(root);
 
 
 }
 
+function moveNode(mover, to) {
+  nodeWithId(to).children.push(nodeWithId(mover));
+  removeNode(mover);
+}
+
+function removeNode(mover) {
+  var moverNode = nodeWithId(mover);
+  var children = moverNode.parent.children;
+  children.splice(children.indexOf(moverNode), 1);
+}
+
+// TODO we could speed up this method by caching all nodes by id initially in a map 
+// and then using that.
 function nodeWithId(id) {
   var lookInNode = function (node) {
     if (node._id == id) {
