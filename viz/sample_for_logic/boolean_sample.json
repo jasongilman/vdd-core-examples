@@ -1,0 +1,19 @@
+{
+  "name": "||",
+  "children": [
+    {
+      "name": "&&",
+      "children": [
+        {"name":"x=5"},
+        {"name":"z=7"}
+      ]
+    },
+    {
+      "name": "&&",
+      "children": [
+        {"name":"a=1"},
+        {"name":"b=2"}
+      ]
+    }
+  ]
+}
