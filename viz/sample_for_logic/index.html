@@ -39,8 +39,6 @@ var tree = d3.layout.tree()
     .size([height, width]);
 
 var diagonal = d3.svg.diagonal();
-    //This is what flips it on its side
-    // .projection(function(d) { return [d.y, d.x]; });
 
 var svg = d3.select("body").append("svg")
     .attr("width", width + margin.right + margin.left)
@@ -52,20 +50,50 @@ d3.json("/viz/sample_for_logic/boolean_sample.json", function(error, flare) {
   root = flare;
   root.x0 = height / 2;
   root.y0 = 0;
-
-  // function collapse(d) {
-  //   if (d.children) {
-  //     d._children = d.children;
-  //     d._children.forEach(collapse);
-  //     d.children = null;
-  //   }
-  // }
-
-  // root.children.forEach(collapse);
   update(root);
 });
 
 d3.select(self.frameElement).style("height", "800px");
+
+function transition() {
+
+  // TODO
+  // 5 and 6 become children of 1
+  // 4 is removed
+
+  var node5 = nodeWithId(5);
+  var node6 = nodeWithId(6);
+  var node1 = nodeWithId(1);
+  var node4 = nodeWithId(4);
+
+  //for now just move node5 from node4 to node1
+  node1.children.push(node5);
+  var index = node4.children.indexOf(node5);
+  node4.children.splice(index, 1);
+  update(root);
+
+
+}
+
+function nodeWithId(id) {
+  var lookInNode = function (node) {
+    if (node._id == id) {
+      return node;
+    }
+    else if (node.children) {
+      var response = null;
+      for (var i = 0; i < node.children.length; i++) {
+        if (response = lookInNode(node.children[i])) {
+          return response;
+        }
+      }
+    }
+    return null;
+  };
+
+  return lookInNode(root);
+}
+
 
 function update(source) {
 

@@ -1,18 +1,29 @@
 {
   "name": "||",
+  "_id": 0,
   "children": [
     {
       "name": "&&",
+      "_id": 1,
       "children": [
-        {"name":"x=5"},
-        {"name":"z=7"}
+        {"name":"x=5","_id": 2},
+        {"name":"z=7","_id": 3},
+        {
+          "name": "&&",
+          "_id": 4,
+          "children": [
+            {"name":"q=5","_id": 5},
+            {"name":"r=7","_id": 6}
+          ]
+        }
       ]
     },
     {
       "name": "&&",
+      "_id": 7,
       "children": [
-        {"name":"a=1"},
-        {"name":"b=2"}
+        {"name":"a=1","_id": 8},
+        {"name":"b=2","_id": 9}
       ]
     }
   ]
