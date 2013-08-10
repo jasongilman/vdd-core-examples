@@ -1,10 +1,11 @@
 
 // This represents the vdd websocket session.
 var session = null;
+var duration = 750;
 
 // Creates a player control inside the player div. The function returned can be used to 
 // set the data of the player and the function handler.
-var playerUpdateFn = vdd.player.createPlayerFn($("div#player"));
+var playerUpdateFn = vdd.player.createPlayerFn($("div#player"), {duration: duration});
 
 // Handles receiving visualization data through WAMP.
 function onVizData(topic, eventData) {
@@ -33,7 +34,6 @@ var margin = {top: 20, right: 120, bottom: 20, left: 120},
     height = 800 - margin.top - margin.bottom;
     
 var i = 0,
-    duration = 750,
     //The root of the tree that's being displayed
     root,
     //An array of the changes to the tree. We can process these changes and animate them within the tree
@@ -58,6 +58,17 @@ function setNewRoot(newRoot, newChanges){
   root.y0 = 0;
   changes = newChanges;
   currChangeIndex = -1;
+
+  //Update the nodesById map
+  self.nodesById = {};
+  var setNodesById = function(node) {
+    self.nodesById[node._id] = node;
+    for (var i = 0; node.children && i < node.children.length; i++) {
+      setNodesById(node.children[i]);
+    }
+  }; 
+  setNodesById(root);
+
   update(root);
 }
 
@@ -111,55 +122,18 @@ function playChanges(changesToPlay, reverse) {
 
 //Adds a node that was removed back to the root
 function addNode(adding, to) {
-  nodeWithId(to).children.push(nodeWithId(adding));
+  nodesById[to].children.push(nodesById[adding]);
 }
 
 function moveNode(mover, to) {
-  nodeWithId(to).children.push(nodeWithId(mover));
+  nodesById[to].children.push(nodesById[mover]);
   removeNode(mover);
 }
 
 function removeNode(mover) {
-  var moverNode = nodeWithId(mover);
+  var moverNode = nodesById[mover];
   var children = moverNode.parent.children;
   children.splice(children.indexOf(moverNode), 1);
-}
-
-// TODO we could speed up this method by caching all nodes by id initially in a map 
-// and then using that.
-function nodeWithId(id) {
-  if (! self.nodesById) {
-    self.nodesById = {};
-    var setNodesById = function(node) {
-      self.nodesById[node._id] = node;
-      for (var i = 0; node.children && i < node.children.length; i++) {
-        setNodesById(node.children[i]);
-      }
-    }; 
-    setNodesById(root);
-  }
-  // var lookInNode = function (node) {
-  //   if (node._id == id) {
-  //     return node;
-  //   }
-  //   else if (node.children) {
-  //     var response = null;
-  //     for (var i = 0; i < node.children.length; i++) {
-  //       if (response = lookInNode(node.children[i])) {
-  //         return response;
-  //       }
-  //     }
-  //   }
-  //   return null;
-  // };
-
-  // var result = lookInNode(root);
-  var result = self.nodesById[id]
-  if (!result) {
-    console.log("Unable to find node with id  " + id);
-  }
-
-  return result;
 }
 
 
@@ -180,17 +154,17 @@ function update(source) {
   // Enter any new nodes at the parent's previous position.
   var nodeEnter = node.enter().append("g")
       .attr("class", "node")
-      .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; })
-      .on("click", click);
+      .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; });
 
+  // TODO change some styling here to be by type
   nodeEnter.append("circle")
       .attr("r", 1e-6)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) { return "#fff"; });
 
   nodeEnter.append("text")
-      .attr("x", function(d) { return d.children || d._children ? -10 : 10; })
+      .attr("x", function(d) { return d.children ? -10 : 10; })
       .attr("dy", ".35em")
-      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+      .attr("text-anchor", function(d) { return d.children ? "end" : "start"; })
       .text(function(d) { return d.name; })
       .style("fill-opacity", 1e-6);
 
@@ -201,7 +175,7 @@ function update(source) {
 
   nodeUpdate.select("circle")
       .attr("r", 4.5)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) { return "#fff"; });
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);
@@ -249,16 +223,4 @@ function update(source) {
     d.x0 = d.x;
     d.y0 = d.y;
   });
-}
-
-// Toggle children on click.
-function click(d) {
-  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else {
-    d.children = d._children;
-    d._children = null;
-  }
-  update(d);
 }

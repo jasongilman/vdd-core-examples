@@ -18,7 +18,7 @@
   (fn [condition] (:type condition)))
 
 (defn make-group-d3-node [{id :id conditions :conditions type :type}]
-  {:name (format "%s %s" id (name type) )
+  {:name (name type) 
    :_id id 
    :type type
    :children (map cond->d3 conditions)})
@@ -33,7 +33,7 @@
 
 (defmethod cond->d3 :eq
   [{v1 :value1 v2 :value2 id :id}]
-  {:name (format "%s %s=%s" id v1 v2) 
+  {:name (format "%s = %s" v1 v2) 
    :_id id 
    :type :eq})
 
