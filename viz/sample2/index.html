@@ -39,6 +39,7 @@ var tree = d3.layout.tree()
     .size([height, width]);
 
 var diagonal = d3.svg.diagonal()
+    //This is what flips it on its side along with the translations that flip the order of x and y.
     .projection(function(d) { return [d.y, d.x]; });
 
 var svg = d3.select("body").append("svg")

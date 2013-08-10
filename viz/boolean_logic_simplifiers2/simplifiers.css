@@ -7,48 +7,22 @@ textarea {
   width: 400px;
 }
 
-g.node {
+.node {
   cursor: pointer;
 }
 
-g.or-type circle {
-  fill: white;
-  stroke-width: 2px;
-  stroke: red;
-}
-g.or-type text {
-  font-style: san-serif;
-  /*font-weight: bold;*/
-  fill: black;
-}
-
-g.and-type circle {
-  fill: white;
-  stroke-width: 2px;
-  stroke: blue;
-}
-g.and-type text {
-  fill: black;
-  font-style: san-serif;
-  /*font-weight: bold;*/
-}
-
-g.eq-type circle {
-  fill: white;
-}
-g.eq-type text {
-  fill: black;
-}
-
-
-/*circle.node {
-  cursor: pointer;
-  stroke: #3182bd;
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
   stroke-width: 1.5px;
-} */
+}
 
-line.link {
+.node text {
+  font: 10px sans-serif;
+}
+
+.link {
   fill: none;
-  stroke: #9ecae1;
+  stroke: #ccc;
   stroke-width: 1.5px;
 }

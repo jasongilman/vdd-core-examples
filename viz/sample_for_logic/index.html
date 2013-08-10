@@ -46,8 +46,11 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.json("/viz/sample_for_logic/boolean_sample.json", function(error, flare) {
-  root = flare;
+var originalRoot = null;
+
+d3.json("/viz/sample_for_logic/boolean_sample.json", function(error, data) {
+  root = data;
+  originalRoot = JSON.parse(JSON.stringify(data));
   root.x0 = height / 2;
   root.y0 = 0;
   update(root);
@@ -76,8 +79,13 @@ function transition() {
   moveNode(6, 1);
   removeNode(4);
   update(root);
+}
 
-
+function reset() {
+  root = JSON.parse(JSON.stringify(originalRoot));
+  root.x0 = height / 2;
+  root.y0 = 0;
+  update(root);
 }
 
 function moveNode(mover, to) {
