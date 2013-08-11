@@ -1,16 +1,20 @@
 
 // This represents the vdd websocket session.
 var session = null;
+var duration = 750;
 
 // Creates a player control inside the player div. The function returned can be used to 
 // set the data of the player and the function handler.
-var playerUpdateFn = vdd.player.createPlayerFn($("div#player"));
+var playerUpdateFn = vdd.player.createPlayerFn($("div#player"), {duration: duration});
 
 // Handles receiving visualization data through WAMP.
 function onVizData(topic, eventData) {
   console.log("visualization data received", eventData);
   // Sets the event data and the handler function.
-  playerUpdateFn(eventData, displayData);
+  setNewRoot(eventData.root, eventData.changes);
+  // We just give the player a list of indices. -1 indicates showing the original state of the condition
+  // tree. 
+  playerUpdateFn([-1].concat(d3.range(eventData.changes.length)), playToIndex);
 }
 
 // Connect using the WAMP protocol and register callback for visualization data
@@ -18,160 +22,202 @@ session = vdd.wamp.connect(onVizData);
 
 // Handle submitting boolean logic
 $("a#submit-logic-text").click(function (event) {
-  console.log(event);
   var logicStr = $("textarea")[0].value;
   vdd.wamp.sendData(session, logicStr);
 });
 
+//////////////////////////////
+// D3 Stuff
 
-//////////////////////////////////////////
-// D3 visualization stuff
+// This example adopted from http://bl.ocks.org/mbostock/4339083
 
-var h = 400;
-var w = 800;
+var margin = {top: 30, right: 10, bottom: 10, left: 10},
+    width = 960 - margin.right - margin.left,
+    height = 500 - margin.top - margin.bottom;
+    
+var i = 0,
+    //The root of the tree that's being displayed
+    root,
+    //An array of the changes to the tree. We can process these changes and animate them within the tree
+    changes,
+    //The current index within changes that we are displaying. -1 indicates before the first change.
+    currChangeIndex = -1;
 
-var vis = d3.select("svg.chart")
-  .attr("width", w) 
-  .attr("height", h);
-var linksGroup = vis.select("g.links");
-var nodesGroup = vis.select("g.nodes");
+var tree = d3.layout.tree()
+    .size([width, height]);
 
-var force = d3.layout.force()
-  .gravity(0)
-  .distance(50)
-  .charge(function (node, index){
-    return -100;
-  })
-  .on("tick", tick)
-  .size([w, h]);
+var diagonal = d3.svg.diagonal();
 
-// Time duration in ms
-var duration = 1000;
+var svg = d3.select("svg.chart")
+    .attr("width", width + margin.right + margin.left)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-var node,
-    link,
-    root;
+function setNewRoot(newRoot, newChanges){
+  root = newRoot
+  root.x0 = height / 2;
+  root.y0 = 0;
+  changes = newChanges;
+  currChangeIndex = -1;
+
+  //Update the nodesById map
+  self.nodesById = {};
+  var setNodesById = function(node) {
+    self.nodesById[node._id] = node;
+    for (var i = 0; node.children && i < node.children.length; i++) {
+      setNodesById(node.children[i]);
+    }
+  }; 
+  setNodesById(root);
+
+  update(root);
+}
+
+function playToIndex(newIndex) {
+  //Animate the changes between currChangeIndex and the new change index
+  var reverse = false;
+  var changesToPlay = null;
+  if (newIndex > currChangeIndex) {
+    // Going forward in time
+    // Select changes starting after the current index up to and including newIndex
+    changesToPlay = changes.slice(currChangeIndex + 1, newIndex + 1);
+  }
+  else if (newIndex < currChangeIndex) {
+    // Going backward in time. Play the reverse
+    changesToPlay = changes.slice(newIndex+1, currChangeIndex+1).reverse();
+    reverse = true;
+  }
+  if (changesToPlay) {
+    //Update the global curr change index.
+    currChangeIndex = newIndex;
+    playChanges(changesToPlay, reverse);
+  }
+}
+
+// Animates the changes to the root. 
+// reverse indicates if the changes should be undone instead of played normally.
+function playChanges(changesToPlay, reverse) {
+  for(var i=0; i<changesToPlay.length; i++){
+    var change = changesToPlay[i];
+
+    if (change.type == "node-move"){
+      if (reverse) { 
+        moveNode(change.id, change.from);
+      }
+      else {
+        moveNode(change.id, change.to);
+      }
+    }
+    else if (change.type == "node-remove"){
+      if(reverse) {
+        addNode(change.id, change.from);
+      }
+      else {
+        removeNode(change.id);
+      }
+    }
+    update(root);
+  }
+}
+
+//Adds a node that was removed back to the root
+function addNode(adding, to) {
+  nodesById[to].children.push(nodesById[adding]);
+}
+
+function moveNode(mover, to) {
+  nodesById[to].children.push(nodesById[mover]);
+  removeNode(mover);
+}
+
+function removeNode(mover) {
+  var moverNode = nodesById[mover];
+  var children = moverNode.parent.children;
+  children.splice(children.indexOf(moverNode), 1);
+}
 
 
+// Handles all the d3 animation and drawing. Taken almost verbatim from a standard d3 example.
+function update(source) {
 
-// Returns a function that can be passed to d3 which will look up attribute values 
-// by type
-// TODO I couldn't figure out how to get css styling to work on svg elements. I would only get errors like undefined property names.
-function attribFunction(submapName, attribute) {
-  // A map of node type to circle and text settings
-  
-  var typeSettings = {or: {circle: {cx: 0,
-                                    cy: 0,
-                                    r: 12},
+  // Compute the new tree layout.
+  var nodes = tree.nodes(root).reverse(),
+      links = tree.links(nodes);
 
-                           text: {dx: "-3px",
-                                  dy: "4px"}},
-
-                      and: {circle: {cx: 0,
-                                     cy: 0,
-                                     r: 12},
-
-                            text: {dx: "-5px",
-                                   dy: "5px"}},
-
-                      eq:  {circle: {cx: 0,
-                                     cy: 0,
-                                     r: 0},
-
-                            text: {dx: "-0.75em",
-                                   dy: "5px"}}};
-
-  return function(d) { return typeSettings[d.type][submapName][attribute]; };
-};     
-
-
-// Displays one iteration's worth of data.
-function displayData(iterationData) {
-  console.log("Displaying data", iterationData);
-
-  // Fix the root node in the center of the graph.
-  iterationData.nodes[0].fixed = true
-  iterationData.nodes[0].x = w/2;
-  iterationData.nodes[0].y = h/2;
-
-
-  // Restart the force layout.
-  force
-      .nodes(iterationData.nodes)
-      .links(iterationData.links)
-      .start();
-
-  // Update the links…
-  link = linksGroup.selectAll("line.link")
-      .data(iterationData.links); 
-
-  // Enter any new links.
-  link.enter().append("svg:line")
-      .attr("class", "link")
-      .attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; });
-
-  // Exit any old links.
-  link.exit().remove();
+  // Normalize for fixed-depth.
+  nodes.forEach(function(d) { d.y = d.depth * 60; });
 
   // Update the nodes…
-  node = nodesGroup.selectAll("g.node")
-      .data(iterationData.nodes);
+  var node = svg.selectAll("g.node")
+      .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
-   //Existing
-  node.attr("class", function(d) { return d.type + "-type node"})
-      .call(force.drag);
+  // Enter any new nodes at the parent's previous position.
+  var nodeEnter = node.enter().append("g")
+      .attr("class", function(d) { return "node " + d.type; })
+      .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; });
 
-  node.select("circle")
-      .attr("cx", attribFunction("circle", "cx"))
-      .attr("cy", attribFunction("circle", "cy"))
-      .attr("r", attribFunction("circle", "r"));
+  nodeEnter.append("circle")
+      .attr("r", 1e-6);
 
-  node.select("text")
-      .attr("dx", attribFunction("text", "dx"))
-      .attr("dy", attribFunction("text", "dy"))
-      .text(function(d) { return d.title });
+  nodeEnter.append("text")
+      .attr("x", function(d) { return d.children ? 0 : 0; })
+      .attr("dy", function(d) { return d.children ? ".35em" : "1.25em"; })
+      .text(function(d) { return d.name; })
+      .style("fill-opacity", 1e-6);
 
+  // Transition nodes to their new position.
+  var nodeUpdate = node.transition()
+      .duration(duration)
+      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
-  // Enter any new nodes.
-  newNodes = node.enter().append("g")
-      .attr("class", function(d) { return d.type + "-type node"})
-      .call(force.drag);
+  nodeUpdate.select("circle")
+      .attr("r", function(d) { return d.children ? 12 : 4.5; });
 
-  newNodes.append("circle")
-      .attr("cx", attribFunction("circle", "cx"))
-      .attr("cy", attribFunction("circle", "cy"))
-      .attr("r", attribFunction("circle", "r"));
+  nodeUpdate.select("text")
+      .style("fill-opacity", 1);
 
-  newNodes.append("text")
-      .attr("dx", attribFunction("text", "dx"))
-      .attr("dy", attribFunction("text", "dy"))
-      .text(function(d) { return d.title });
+  // Transition exiting nodes to the parent's new position.
+  var nodeExit = node.exit().transition()
+      .duration(duration)
+      .attr("transform", function(d) { return "translate(" + source.x + "," + source.y + ")"; })
+      .remove();
 
-  // Exit any old nodes.
-  node.exit().remove();
-}
+  nodeExit.select("circle")
+      .attr("r", 1e-6);
 
-function tick() {
-  link.attr("x1", function(d) { return d.source.x; })
-      .attr("y1", function(d) { return d.source.y; })
-      .attr("x2", function(d) { return d.target.x; })
-      .attr("y2", function(d) { return d.target.y; });
+  nodeExit.select("text")
+      .style("fill-opacity", 1e-6);
 
-  node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
-}
+  // Update the links…
+  var link = svg.selectAll("path.link")
+      .data(links, function(d) { return d.target.id; });
 
-// Toggle children on click.
-// TODO not enabled for now
-function click(d) {
-  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else {
-    d.children = d._children;
-    d._children = null;
-  }
-  update();
+  // Enter any new links at the parent's previous position.
+  link.enter().insert("path", "g")
+      .attr("class", "link")
+      .attr("d", function(d) {
+        var o = {x: source.x0, y: source.y0};
+        return diagonal({source: o, target: o});
+      });
+
+  // Transition links to their new position.
+  link.transition()
+      .duration(duration)
+      .attr("d", diagonal);
+
+  // Transition exiting nodes to the parent's new position.
+  link.exit().transition()
+      .duration(duration)
+      .attr("d", function(d) {
+        var o = {x: source.x, y: source.y};
+        return diagonal({source: o, target: o});
+      })
+      .remove();
+
+  // Stash the old positions for transition.
+  nodes.forEach(function(d) {
+    d.x0 = d.x;
+    d.y0 = d.y;
+  });
 }

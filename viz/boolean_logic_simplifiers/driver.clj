@@ -2,10 +2,12 @@
   (:require [taoensso.timbre :as timbre
               :refer (debug info warn error)]
             [clojure.edn]
+            [clojure.zip :as z]
             [boolean-logic-simplifiers.core :as simplifiers]
             [boolean-logic-simplifiers.factory :as factory]
             [vdd-core.core :as vdd]
-            [vdd-core.capture-global :as capture]))
+            [vdd-core.capture-global :as capture])
+  (:use [clojure.pprint]))
 
 (comment
   ; You need to run this code after resetting the repl
@@ -13,81 +15,76 @@
   (enable-viz)
 )
 
-(defmulti cond->node 
-  "Multimethod to convert a condition into a single node. Does not handle adding child nodes"
-  (fn [condition depth] (:type condition)))
+(defmulti cond->d3 
+  "Multimethod to convert a condition into a d3 node."
+  (fn [condition] (:type condition)))
 
-(defmethod cond->node :and
-  [_ depth]
-  {:title "&" :depth depth :type :and})
+(defn make-group-d3-node [{id :id conditions :conditions type :type} title]
+  {:name title
+   :_id id 
+   :type type
+   :children (map cond->d3 conditions)})
 
-(defmethod cond->node :or
-  [_ depth]
-  {:title "||" :depth depth :type :or})
+(defmethod cond->d3 :and
+  [c]
+  (make-group-d3-node c "&&"))
 
-(defmethod cond->node :eq
-  [{v1 :value1 v2 :value2} depth]
-  {:title (format "%s = %s" v1 v2) :depth depth :type :eq})
+(defmethod cond->d3 :or
+  [c]
+  (make-group-d3-node c "||"))
 
-(defn- add-node 
-  "TODO"
-  [nodes-and-links new-node parent-index]
-  (let [nodes-and-links (update-in nodes-and-links [:nodes] conj new-node)
-        new-node-index (-> nodes-and-links :nodes count dec)
-        link {:source parent-index :target new-node-index}]
-    (update-in nodes-and-links [:links] conj link)))
+(defmethod cond->d3 :eq
+  [{v1 :value1 v2 :value2 id :id}]
+  {:name (format "%s = %s" v1 v2) 
+   :_id id 
+   :type :eq})
 
-(defmulti add-condition-child-nodes-and-links
-  "TODO"
-  (fn [condition nodes-and-links cond-index depth] (:type condition)))
 
-(defn add-group-condition-links
-  "TODO"
-  [{conditions :conditions} nodes-and-links cond-index depth]
-  (let [depth (inc depth)]
-    (reduce (fn [nodes-and-links condition]
-              (let [new-node (cond->node condition depth)
-                    nodes-and-links (add-node nodes-and-links new-node cond-index)
-                    ; TODO remove duplication of determining this here and in add-node
-                    new-node-index (-> nodes-and-links :nodes count dec)]
-                (add-condition-child-nodes-and-links condition nodes-and-links new-node-index depth)))
-            nodes-and-links
-            conditions)))
-
-(defmethod add-condition-child-nodes-and-links :and
-  [condition nodes-and-links cond-index depth]
-  (add-group-condition-links condition nodes-and-links cond-index depth))
-
-(defmethod add-condition-child-nodes-and-links :or
-  [condition nodes-and-links cond-index depth]
-  (add-group-condition-links condition nodes-and-links cond-index depth))
-
-(defmethod add-condition-child-nodes-and-links :eq
-  [condition nodes-and-links cond-index depth]
-  ; No need to add any links. Added by parent
-  nodes-and-links)
-
-(defn condition->d3-nodes-and-links 
-  "TODO"
-  [condition]
-  (let [node (cond->node condition 1)
-        nodes-and-links {:nodes [node] :links []}]
-    (add-condition-child-nodes-and-links condition nodes-and-links 0 1)))
+(defn- walk-tree 
+  "Walks an entire condition tree to force side effects. Returns the condition when it's done"
+  [c]
+  (let [zipped (factory/cond-zipper c)]
+    (loop [zip-node zipped]
+      (if (z/end? zip-node)
+        (z/root zip-node)
+        (recur (z/next zip-node))))))
 
 (defn- test-simplifiers
   [logic-str]
   (debug "Data received:" logic-str)
+  (capture/reset-captured!)
   (let [root-cond (factory/string->condition logic-str)
-        simplified (simplifiers/simplify root-cond)
-        ; TODO get captured here then prepend root-cond and append simplified
-        conditions [root-cond simplified]
-        conditions (map condition->d3-nodes-and-links conditions)]
-    (vdd/data->viz conditions)))
+        simplified (walk-tree (simplifiers/simplify root-cond))]
+    
+    (vdd/data->viz {:root (cond->d3 root-cond)
+                    :changes (capture/captured)
+                    :simplified simplified})))
 
 (comment
-  (factory/string->condition "(and (= :x 1) (= :z 2))")
+  (simplifiers/simplify 
+    (factory/string->condition "(and
+  (or
+    (and
+      (= :a 1)
+      (= :b 2)
+      (and
+        (= :a 1)
+        (= :b 2)))
+    (and
+      (= :a 1)
+      (= :b 2)))
+  (and
+    (= :a 1)
+    (= :b 2)))
+"))
+  
+  (capture/reset-captured!)
+  
+  (capture/captured)
   (test-simplifiers "(and (= :x 1) (= :z 2))")
-  )
+  
+  
+)
 
 (defn enable-viz 
   []
