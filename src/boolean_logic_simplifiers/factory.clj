@@ -1,6 +1,7 @@
 (ns boolean-logic-simplifiers.factory
   (:require [clojure.zip :as z])
-  (:refer-clojure :exclude [and or =]))
+  (:refer-clojure :exclude [and or =])
+  (:import [java.io StringWriter]))
 
 (comment
   ; This namespace allows easily creating conditions for testing. Can be called like the following
@@ -48,3 +49,26 @@
 (defn string->condition [s]
   (binding [*ns* (find-ns 'boolean-logic-simplifiers.factory)]
     (assign-ids (load-string s))))
+
+(defmulti cond->clojure-calls 
+  "Multimethod to convert a condition into a string."
+  (fn [condition] (:type condition)))
+
+(defn condition->string [c]
+  (let [w (StringWriter.)]
+    (clojure.pprint/pprint (cond->clojure-calls c) w)
+    (.toString w)))
+
+(defmethod cond->clojure-calls :and
+  [{conditions :conditions}]
+  (list 'and (for [c conditions]
+              (cond->clojure-calls c))))
+
+(defmethod cond->clojure-calls :or
+  [{conditions :conditions}]
+  (list 'or (for [c conditions]
+              (cond->clojure-calls c))))
+
+(defmethod cond->clojure-calls :eq
+  [{v1 :value1 v2 :value2}]
+  (list '= v1 v2))

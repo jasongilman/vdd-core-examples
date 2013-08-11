@@ -17,8 +17,16 @@ textarea {
   stroke-width: 1.5px;
 }
 
+.and circle {
+  stroke-width: 3px;
+}
+.or circle {
+  stroke-width: 3px;
+}
+
 .node text {
   font: 10px sans-serif;
+  text-anchor: middle;
 }
 
 .link {

@@ -29,6 +29,8 @@ $("a#submit-logic-text").click(function (event) {
 //////////////////////////////
 // D3 Stuff
 
+// This example adopted from http://bl.ocks.org/mbostock/4339083
+
 var margin = {top: 20, right: 120, bottom: 20, left: 120},
     width = 960 - margin.right - margin.left,
     height = 800 - margin.top - margin.bottom;
@@ -108,7 +110,6 @@ function playChanges(changesToPlay, reverse) {
       }
     }
     else if (change.type == "node-remove"){
-      // TODO reverse node removal won't work until we preinitiallize all the nodes by id.
       if(reverse) {
         addNode(change.id, change.from);
       }
@@ -145,7 +146,7 @@ function update(source) {
       links = tree.links(nodes);
 
   // Normalize for fixed-depth.
-  nodes.forEach(function(d) { d.y = d.depth * 180; });
+  nodes.forEach(function(d) { d.y = d.depth * 90; });
 
   // Update the nodes…
   var node = svg.selectAll("g.node")
@@ -153,18 +154,15 @@ function update(source) {
 
   // Enter any new nodes at the parent's previous position.
   var nodeEnter = node.enter().append("g")
-      .attr("class", "node")
+      .attr("class", function(d) { return "node " + d.type; })
       .attr("transform", function(d) { return "translate(" + source.x0 + "," + source.y0 + ")"; });
 
-  // TODO change some styling here to be by type
   nodeEnter.append("circle")
-      .attr("r", 1e-6)
-      .style("fill", function(d) { return "#fff"; });
+      .attr("r", 1e-6);
 
   nodeEnter.append("text")
-      .attr("x", function(d) { return d.children ? -10 : 10; })
-      .attr("dy", ".35em")
-      .attr("text-anchor", function(d) { return d.children ? "end" : "start"; })
+      .attr("x", function(d) { return d.children ? 0 : 0; })
+      .attr("dy", function(d) { return d.children ? ".35em" : "1.25em"; })
       .text(function(d) { return d.name; })
       .style("fill-opacity", 1e-6);
 
@@ -174,8 +172,7 @@ function update(source) {
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
   nodeUpdate.select("circle")
-      .attr("r", 4.5)
-      .style("fill", function(d) { return "#fff"; });
+      .attr("r", function(d) { return d.children ? 12 : 4.5; });
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);

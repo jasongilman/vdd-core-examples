@@ -11,10 +11,30 @@
 ; None of these conditions should be changed by the and simplifier
 (deftest test-and-simplifier-none-required
   (are [c] (= c (and-simplify c))
-    (v 1)
-    (f/or (v 1) (v 2))
-    (f/and (v 1) (v 2))
-    (f/and (v 1) (f/or (v 2) (v 3)))))
+       (v 1)
+       (f/or (v 1) (v 2))
+       (f/and (v 1) (v 2))
+       (f/and (v 1) (f/or (v 2) (v 3)))))
+
+(deftest test-and-simplifier-within-or
+  (is (= (f/or 
+           (v 4) 
+           (f/or 
+             (v 6)
+             (f/and 
+               (v 1) 
+               (v 2) 
+               (v 3))))
+         (and-simplify
+           (f/or
+             (v 4) 
+             (f/or 
+               (v 6)
+               (f/and 
+                 (v 1) 
+                 (f/and
+                   (v 2)
+                   (v 3)))))))))
 
 (deftest test-and-simplifier-single-level
   (is (= (f/and 
