@@ -31,9 +31,9 @@ $("a#submit-logic-text").click(function (event) {
 
 // This example adopted from http://bl.ocks.org/mbostock/4339083
 
-var margin = {top: 20, right: 120, bottom: 20, left: 120},
+var margin = {top: 30, right: 10, bottom: 10, left: 10},
     width = 960 - margin.right - margin.left,
-    height = 800 - margin.top - margin.bottom;
+    height = 500 - margin.top - margin.bottom;
     
 var i = 0,
     //The root of the tree that's being displayed
@@ -44,7 +44,7 @@ var i = 0,
     currChangeIndex = -1;
 
 var tree = d3.layout.tree()
-    .size([height, width]);
+    .size([width, height]);
 
 var diagonal = d3.svg.diagonal();
 
@@ -146,7 +146,7 @@ function update(source) {
       links = tree.links(nodes);
 
   // Normalize for fixed-depth.
-  nodes.forEach(function(d) { d.y = d.depth * 90; });
+  nodes.forEach(function(d) { d.y = d.depth * 60; });
 
   // Update the nodes…
   var node = svg.selectAll("g.node")
