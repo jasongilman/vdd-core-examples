@@ -24,17 +24,6 @@
         (z/root zip-node)
         (recur (z/next zip-node))))))
 
-#_(def ^{:doc "A pointer to the original and-simplify. This will continue to work even after and-simplify is redefined."}
-  orig-and-simplify simplifiers/and-simplify)
-
-#_(defn capturing-and-simplify 
-  "A wrapper around the original and-simplify that captures the result of simplification in an atom.
-  capture-atom should contain a vector "
-  [capture-atom condition]
-  (let [simplified (orig-and-simplify condition)]
-    (swap! capture-atom conj simplified)
-    simplified))
-
 (defn replace-condition 
   "Replaces the condition in the root cond by matching the id"
   [root-cond condition]
@@ -95,19 +84,6 @@
                          changes)]
     (vdd/data->viz versions)))
 
-#_(defn- test-simplifiers
-  [logic-str]
-  (debug "Data received:" logic-str)
-  ; Reset the captured data even though we're not using it.
-  (capture/reset-captured!)
-  
-  (let [root-cond (factory/string->condition logic-str)
-        capture-atom (atom [])]
-    (with-redefs 
-      [simplifiers/and-simplify (partial capturing-and-simplify capture-atom)]
-      (let [simplified (walk-tree (simplifiers/simplify root-cond))
-            condition-iterations (concat [root-cond] (map #(replace-condition root-cond %) @capture-atom))]
-        (vdd/data->viz condition-iterations)))))
 
 (comment
   (simplifiers/simplify 
@@ -131,8 +107,6 @@
   
   (capture/captured)
   (test-simplifiers "(and (= :x 1) (= :z 2))")
-  
-  
 )
 
 (defn enable-viz 

@@ -24,40 +24,29 @@ $("a#submit-logic-text").click(function (event) {
   vdd.wamp.sendData(session, logicStr);
 });
 
+function drawConditionGraph(condition) {
+  var div = $("div.boolean-graph");
+  div.html(nodeTypeToHtml[condition.type](condition));
+}
+
+function conditionsToHtmlList(conditions) {
+  var html = "<ul>";
+  for(var i=0; conditions && i<conditions.length; i++)
+  {
+    var c = conditions[i];
+    html += "<li>" + nodeTypeToHtml[c.type](c) + "</li>";
+  }
+  return html + "</ul>";
+}
+
 var nodeTypeToHtml = {
   and: function(c) {
-    var html = "AND: <ul>";
-
-    for(var i=0; c.conditions && i<c.conditions.length; i++)
-    {
-      var cond = c.conditions[i];
-      html += "<li>" + nodeTypeToHtml[cond.type](cond) + "</li>";
-    }
-    html += "</ul>";
-
-    return html;
+    return "AND: " + conditionsToHtmlList(c.conditions);
   },
-
   or: function (c) {
-    var html = "AND: <ul>";
-
-    for(var i=0; c.conditions && i<c.conditions.length; i++)
-    {
-      var cond = c.conditions[i];
-      html += "<li>" + nodeTypeToHtml[cond.type](cond) + "</li>";
-    }
-    html += "</ul>";
-
-    return html;
+    return "OR: " + conditionsToHtmlList(c.conditions);
   },
-
   eq: function (c) {
     return c.value1.toString() + " = " + c.value2.toString();
   }
 };
-
-//Draws a condition 
-function drawConditionGraph(condition) {
-  var div = $("div#before-graph");
-  div.html(nodeTypeToHtml[condition.type](condition));
-}
