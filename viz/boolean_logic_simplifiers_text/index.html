@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Boolean Logic Simplifier Example</title>
+  <link href="/jquery-ui/jquery-ui.min.css" rel="stylesheet">
+  <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+  <link href="/vdd/vdd.css" rel="stylesheet">
+  <link href="/viz/boolean_logic_simplifiers_text/simplifiers.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>Boolean Logic Simplifiers Text</h1>
+    <textarea name="logic-text">
+(and (and (= "a" 1) (= "b" 2)) (and (= "x" 5) (= "z" 7)))
+    </textarea>
+    <a href="#" id="submit-logic-text" class="btn">Submit</a>
+    <!-- Visualization will be drawn in this -->
+
+    <div class="row">
+      <div id="before-graph" class="boolean-graph span5">
+        <h2>Before</h2>
+        <ul>
+          <li>lorem</li>
+          <li>lorem</li>
+          <li>lorem</li>
+        </ul>
+      </div>
+      <div id="after-graph" class="boolean-graph span5">
+        <h2>After</h2>
+        <ul>
+          <li>lorem</li>
+          <li>lorem</li>
+          <li>lorem</li>
+        </ul>
+      </div>
+    </div>
+    <div id="player" />
+  </div>
+
+  <!-- These libraries are required for using vdd-core. -->
+  <script src="/jquery/jquery.min.js"></script>
+  <script src="/jquery-ui/jquery-ui.min.js"></script>
+  <script src="/autobahn/autobahn.min.js"></script>
+  <script src="/vdd/vdd-core.js"></script>
+
+  <!-- the visualization javascript -->
+  <script src="/viz/boolean_logic_simplifiers_text/simplifiers.js"></script>
+  
+</body>
+</html>

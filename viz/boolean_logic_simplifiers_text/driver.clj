@@ -1,0 +1,141 @@
+(ns boolean-logic-simplifiers-text.driver
+  (:require [taoensso.timbre :as timbre
+              :refer (debug info warn error)]
+            [clojure.edn]
+            [clojure.zip :as z]
+            [boolean-logic-simplifiers.core :as simplifiers]
+            [boolean-logic-simplifiers.factory :as factory]
+            [vdd-core.core :as vdd]
+            [vdd-core.capture-global :as capture])
+  (:use [clojure.pprint]))
+
+(comment
+  ; You need to run this code after resetting the repl
+  (require 'boolean-logic-simplifiers-text.driver)
+  (enable-viz)
+)
+
+(defn- walk-tree 
+  "Walks an entire condition tree to force side effects. Returns the condition when it's done"
+  [c]
+  (let [zipped (factory/cond-zipper c)]
+    (loop [zip-node zipped]
+      (if (z/end? zip-node)
+        (z/root zip-node)
+        (recur (z/next zip-node))))))
+
+#_(def ^{:doc "A pointer to the original and-simplify. This will continue to work even after and-simplify is redefined."}
+  orig-and-simplify simplifiers/and-simplify)
+
+#_(defn capturing-and-simplify 
+  "A wrapper around the original and-simplify that captures the result of simplification in an atom.
+  capture-atom should contain a vector "
+  [capture-atom condition]
+  (let [simplified (orig-and-simplify condition)]
+    (swap! capture-atom conj simplified)
+    simplified))
+
+(defn replace-condition 
+  "Replaces the condition in the root cond by matching the id"
+  [root-cond condition]
+  (let [id (:id condition)
+        zipped (factory/cond-zipper root-cond)]
+    (loop [zip-node zipped]
+      (if (z/end? zip-node)
+        (throw (Exception. (str "Did not find condition with id " id)))
+        (if (-> zip-node z/node :id (= id))
+          (-> zip-node (z/replace condition) z/root)
+          (recur (z/next zip-node)))))))
+
+(defn- run-at-id 
+  "Allows running a function on a zipper at a condition within the root-cond with an id. The 
+  function result will be returned."
+  [root-cond id f]
+  (loop [zip-node (factory/cond-zipper root-cond)]
+    (if (z/end? zip-node)
+      (throw (Exception. (str "Did not find condition with id " id)))
+      (if (-> zip-node z/node :id (= id))
+        (f zip-node)
+        (recur (z/next zip-node))))))
+
+
+(defmulti apply-change 
+  "Applies a recorded change to the root condition"
+  (fn [root-cond change] (:type change)))
+
+(defmethod apply-change :node-remove 
+  [root-cond {id :id}]
+  ; Remove the condition with the id and return the updated root
+  (run-at-id root-cond id #(-> % z/remove z/root)))
+
+(defmethod apply-change :node-move 
+  [root-cond {from :from to :to id :id}]
+  (let [condition (run-at-id root-cond id z/node)
+        root-cond (apply-change root-cond {:type :node-remove :from from :id id})]
+    (run-at-id 
+      root-cond 
+      to 
+      (fn [to-cond-z]
+        (let [to-cond (z/node to-cond-z)
+              updated (update-in to-cond [:conditions] #(conj % condition))]
+          (z/root (z/replace to-cond-z updated)))))))
+
+
+(defn- test-simplifiers
+  [logic-str]
+  (debug "Data received:" logic-str)
+  (capture/reset-captured!)
+  
+  (let [root-cond (factory/string->condition logic-str)
+        simplified (walk-tree (simplifiers/simplify root-cond))
+        changes (capture/captured)
+        versions (reduce (fn [versions change]
+                           (conj versions (apply-change (last versions) change))) 
+                         [root-cond]
+                         changes)]
+    (vdd/data->viz versions)))
+
+#_(defn- test-simplifiers
+  [logic-str]
+  (debug "Data received:" logic-str)
+  ; Reset the captured data even though we're not using it.
+  (capture/reset-captured!)
+  
+  (let [root-cond (factory/string->condition logic-str)
+        capture-atom (atom [])]
+    (with-redefs 
+      [simplifiers/and-simplify (partial capturing-and-simplify capture-atom)]
+      (let [simplified (walk-tree (simplifiers/simplify root-cond))
+            condition-iterations (concat [root-cond] (map #(replace-condition root-cond %) @capture-atom))]
+        (vdd/data->viz condition-iterations)))))
+
+(comment
+  (simplifiers/simplify 
+    (factory/string->condition "(and
+  (or
+    (and
+      (= :a 1)
+      (= :b 2)
+      (and
+        (= :a 1)
+        (= :b 2)))
+    (and
+      (= :a 1)
+      (= :b 2)))
+  (and
+    (= :a 1)
+    (= :b 2)))
+"))
+  
+  (capture/reset-captured!)
+  
+  (capture/captured)
+  (test-simplifiers "(and (= :x 1) (= :z 2))")
+  
+  
+)
+
+(defn enable-viz 
+  []
+  (vdd/set-viz-request-callback! test-simplifiers))
+

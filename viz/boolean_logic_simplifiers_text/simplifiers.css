@@ -1,0 +1,8 @@
+textarea {
+  height: 5em;
+  width: 800px;
+}
+
+div.boolean-graph {
+  border: 1px solid lightgrey;
+}
