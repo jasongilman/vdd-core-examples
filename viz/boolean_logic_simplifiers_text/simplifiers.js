@@ -21,7 +21,7 @@ session = vdd.wamp.connect(onVizData);
 // Handle submitting boolean logic
 $("a#submit-logic-text").click(function (event) {
   var logicStr = $("textarea")[0].value;
-  vdd.wamp.sendData(session, logicStr);
+  vdd.wamp.sendData(session, "boolean-logic-simplifiers-text.driver/test-simplifiers", logicStr);
 });
 
 function drawConditionGraph(condition) {

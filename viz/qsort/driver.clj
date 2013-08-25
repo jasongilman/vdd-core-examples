@@ -8,12 +8,12 @@
   (require 'qsort.driver)
   (def server (vdd/start-viz))
   (vdd/stop-viz server)
-  (viz-qsort (shuffle (range 50)))
+  (viz-qsort (shuffle (range 20)))
+  (viz-qsort [3 2 4 5 1])
 )
 
 ; Forward declare a data munger for visualization data
 (declare qsort qsort-list-combiner)
-
 
 (defn viz-qsort 
   "Runs the quicksort implementation capturing data as it runs. Then munges the

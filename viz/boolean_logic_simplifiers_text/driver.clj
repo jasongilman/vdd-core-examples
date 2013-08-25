@@ -9,12 +9,6 @@
             [vdd-core.capture-global :as capture])
   (:use [clojure.pprint]))
 
-(comment
-  ; You need to run this code after resetting the repl
-  (require 'boolean-logic-simplifiers-text.driver)
-  (enable-viz)
-)
-
 (defn- walk-tree 
   "Walks an entire condition tree to force side effects. Returns the condition when it's done"
   [c]
@@ -83,33 +77,3 @@
                          [root-cond]
                          changes)]
     (vdd/data->viz versions)))
-
-
-(comment
-  (simplifiers/simplify 
-    (factory/string->condition "(and
-  (or
-    (and
-      (= :a 1)
-      (= :b 2)
-      (and
-        (= :a 1)
-        (= :b 2)))
-    (and
-      (= :a 1)
-      (= :b 2)))
-  (and
-    (= :a 1)
-    (= :b 2)))
-"))
-  
-  (capture/reset-captured!)
-  
-  (capture/captured)
-  (test-simplifiers "(and (= :x 1) (= :z 2))")
-)
-
-(defn enable-viz 
-  []
-  (vdd/set-viz-request-callback! test-simplifiers))
-
