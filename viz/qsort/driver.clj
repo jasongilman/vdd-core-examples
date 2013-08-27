@@ -34,8 +34,7 @@
 ; This is a little convoluted. The qsort algorithm in clojure is recursive so it only looks at a portion of the list
 ; at a time. I wanted the entire list to be displayed in the visualization so this keeps track of the results
 ; and appends or prepends the portions of the list that were missing in the recursed captured data.
-; TODO We should simplify this and we can handle it in the visualization.
-; We want to show only the active data at any particular time. We should be able to send the the pieces
+; We want to show only the active data at any particular time. Ideally, we should be able to send the the pieces
 ; of the component data to visualize without having to squash everything together
 (defn qsort-list-combiner
   "Combines together the captured maps from quicksort to make it easier to display"
