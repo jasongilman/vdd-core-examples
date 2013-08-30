@@ -19,6 +19,8 @@
   "Runs the quicksort implementation capturing data as it runs. Then munges the
   data for visualization and sends it to the quicksort visualization."
   [data]
+  ; Enable capturing of data.
+  (capture/enable)
   ; Reset the global captured state
   (capture/reset-captured!)
   ; Run quicksort. Visualization data will be captured

@@ -5,7 +5,7 @@ var duration = 750;
 
 // Creates a player control inside the player div. The function returned can be used to 
 // set the data of the player and the function handler.
-var playerUpdateFn = vdd.player.createPlayerFn($("div#player"), {duration: duration});
+var playerUpdateFn = vdd_core.player.createPlayerFn($("div#player"), {duration: duration});
 
 // Handles receiving visualization data through WAMP.
 function onVizData(topic, eventData) {
@@ -18,12 +18,12 @@ function onVizData(topic, eventData) {
 }
 
 // Connect using the WAMP protocol and register callback for visualization data
-session = vdd.wamp.connect(onVizData);
+session = vdd_core.connection.connect(onVizData);
 
 // Handle submitting boolean logic
 $("a#submit-logic-text").click(function (event) {
   var logicStr = $("textarea")[0].value;
-  vdd.wamp.sendData(session, "boolean-logic-simplifiers.driver/test-simplifiers", logicStr);
+  vdd_core.connection.sendData(session, "boolean-logic-simplifiers.driver/test-simplifiers", logicStr);
 });
 
 //////////////////////////////

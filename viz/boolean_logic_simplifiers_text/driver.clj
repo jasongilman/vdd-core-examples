@@ -67,6 +67,7 @@
 (defn- test-simplifiers
   [logic-str]
   (debug "Data received:" logic-str)
+  (capture/enable)
   (capture/reset-captured!)
   
   (let [root-cond (factory/string->condition logic-str)
