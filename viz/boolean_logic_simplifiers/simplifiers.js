@@ -23,7 +23,7 @@ session = vdd_core.connection.connect(onVizData);
 // Handle submitting boolean logic
 $("a#submit-logic-text").click(function (event) {
   var logicStr = $("textarea")[0].value;
-  vdd_core.connection.sendData(session, "boolean-logic-simplifiers.driver/test-simplifiers", logicStr);
+  vdd_core.connection.callServerFunction(session, "boolean-logic-simplifiers.driver/test-simplifiers", logicStr);
 });
 
 //////////////////////////////
