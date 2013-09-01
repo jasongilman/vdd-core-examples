@@ -7,6 +7,6 @@
   
   :profiles {:dev {:dependencies [[org.clojure/tools.namespace "0.2.3"]
                                   ; Added vdd-core as a development dependency
-                                  [vdd-core "0.1.0-SNAPSHOT"]]
+                                  [vdd-core "0.1.0"]]
                    ; Add viz as a source path to load visualization drivers
                    :source-paths ["viz"]}})

@@ -33,6 +33,18 @@
    :_id id 
    :type :eq})
 
+(defmethod cond->d3 :gt
+  [{v1 :value1 v2 :value2 id :id}]
+  {:name (format "%s > %s" v1 v2) 
+   :_id id 
+   :type :eq})
+
+(defmethod cond->d3 :lt
+  [{v1 :value1 v2 :value2 id :id}]
+  {:name (format "%s < %s" v1 v2) 
+   :_id id 
+   :type :eq})
+
 
 (defn- walk-tree 
   "Walks an entire condition tree to force side effects. Returns the condition when it's done"

@@ -24,6 +24,12 @@
 (defn = [v1 v2]
   {:type :eq :value1 v1 :value2 v2})
 
+(defn < [v1 v2]
+  {:type :lt :value1 v1 :value2 v2})
+
+(defn > [v1 v2]
+  {:type :gt :value1 v1 :value2 v2})
+
 (defn cond-zipper 
   "Returns a clojure zipper object that can traverse over a condition"
   [cond]
