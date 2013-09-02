@@ -26,7 +26,7 @@ $("a#submit-logic-text").click(function (event) {
 
 function drawConditionGraph(condition) {
   var div = $("div.boolean-graph");
-  div.html(nodeTypeToHtml[condition.type](condition));
+  div.html(conditionsToHtmlList([condition]));
 }
 
 function conditionsToHtmlList(conditions) {
@@ -48,5 +48,11 @@ var nodeTypeToHtml = {
   },
   eq: function (c) {
     return c.value1.toString() + " = " + c.value2.toString();
+  },
+  gt: function (c) {
+    return c.value1.toString() + " > " + c.value2.toString();
+  },
+  lt: function (c) {
+    return c.value1.toString() + " < " + c.value2.toString();
   }
 };
