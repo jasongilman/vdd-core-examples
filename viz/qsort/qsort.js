@@ -12,7 +12,6 @@ var chart = d3.select("svg.chart")
   .attr("width", w) 
   .attr("height", h);
 
-
 var xScale = d3.scale.ordinal()
   .rangeRoundBands([0, w], 0.05, 0);
 var yScale = d3.scale.linear()
@@ -26,7 +25,18 @@ function onVizData(topic, eventData) {
 }
 
 // Connect using the WAMP protocol and register callback for visualization data
-vdd_core.connection.connect(onVizData);
+var session = vdd_core.connection.connect(onVizData);
+
+// Handle submitting boolean logic
+$("a#submit-numbers").click(function (event) {
+  var numberStr = $("input#numbers-to-sort")[0].value;
+  var splitNumbers = numberStr.split(" ");
+  var numbers = [];
+  for(var i=0; i<splitNumbers.length; i++) {
+    numbers.push(parseInt(splitNumbers[i]));
+  }
+  vdd_core.connection.callServerFunction(session, "qsort.driver/viz-qsort", numbers);
+});
 
 // Displays one iteration's worth of data.
 function displayData(iterationData) {

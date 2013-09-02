@@ -2,29 +2,38 @@
 <html>
 <head>
   <title>Boolean Logic Simplifier Example</title>
+  <!-- These are required for using vdd-core. -->
   <link href="/jquery-ui/jquery-ui.min.css" rel="stylesheet">
   <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
   <link href="/vdd/vdd.css" rel="stylesheet">
+
+  <!-- visualization specific -->
   <link href="/viz/boolean_logic_simplifiers/simplifiers.css" rel="stylesheet">
 </head>
 <body>
   <div class="container">
     <h1>Boolean Logic Simplifiers</h1>
+
     <textarea name="logic-text">
 (and 
-   (and 
-    (= "a" 1)
-    (= "b" 2))
-   (and 
-    (= "x" 5)
-    (= "z" 7)))
+   (and (= "a" 1) (= "b" 2))
+   (and (= "x" 5) (= "z" 7)))
     </textarea>
     <a href="#" id="submit-logic-text" class="btn">Submit</a>
+    
     <!-- Visualization will be drawn in this -->
     <svg class="chart">
     </svg>
-    <div id="player" />
+
+    <div id="player">
+    </div>
+
+    <div id="about-section">
+      <h2>About</h2>
+      <p>This is for visualizing some code that simplifies a boolean condition tree. It currently only implements one simplification - the flattening of conditions from nested AND operations. The visualization is implemented using a <a href="https://github.com/mbostock/d3/wiki/Tree-Layout">D3 Tree Layout</a>.</p>
+      <p>The code being visualized is located in <code>vdd-core-examples/src/boolean_logic_simplifiers/</code>. The visualization code is in <code>vdd-core-examples/viz/boolean_logic_simplifiers/</code>.
+    </div>
   </div>
 
   <!-- These libraries are required for using vdd-core. -->
@@ -33,8 +42,8 @@
   <script src="/autobahn/autobahn.min.js"></script>
   <script src="/vdd/vdd-core.js"></script>
 
+  <!-- visualization specific -->
   <script src="/viz/d3.v3/d3.v3.min.js" charset="utf-8"></script>
-  <!-- the visualization javascript -->
   <script src="/viz/boolean_logic_simplifiers/simplifiers.js"></script>
   
 </body>

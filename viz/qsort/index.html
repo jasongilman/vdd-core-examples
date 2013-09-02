@@ -2,18 +2,35 @@
 <html>
 <head>
   <title>Quick Sort Demo</title>
+  <!-- These are required for using vdd-core. -->
   <link href="/jquery-ui/jquery-ui.min.css" rel="stylesheet">
   <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
   <link href="/vdd/vdd.css" rel="stylesheet">
+
+  <!-- visualization specific -->
   <link href="/viz/qsort/qsort.css" rel="stylesheet">
 </head>
 <body>
   <div class="container">
     <h1>Quick Sorting Visualization</h1>
+
+    <input type="text" id="numbers-to-sort" 
+    value="9 0 8 6 2 3 5 4 1 10 7" />
+    <a href="#" id="submit-numbers" class="btn">Submit</a>
+
     <!-- Visualization will be drawn in this -->
-    <svg class="chart" />
-    <div id="player" />
+    <svg class="chart">
+    </svg>
+
+    <div id="player">
+    </div>
+
+    <div id="about-section">
+      <h2>About</h2>
+      <p>This is for visualizing code implementing the Quick Sort algorithm. The visualization is implemented using D3.</p>
+      <p>The code being visualized is located in <code>vdd-core-examples/src/sorter/</code>. The visualization code is in <code>vdd-core-examples/viz/qsort/</code>.
+    </div>
   </div>
 
   <!-- These libraries are required for using vdd-core. -->
@@ -22,8 +39,8 @@
   <script src="/autobahn/autobahn.min.js"></script>
   <script src="/vdd/vdd-core.js"></script>
 
+  <!-- visualization specific -->
   <script src="/viz/d3.v3/d3.v3.min.js" charset="utf-8"></script>
-  <!-- the visualization javascript -->
   <script src="/viz/qsort/qsort.js"></script>
   
 </body>
