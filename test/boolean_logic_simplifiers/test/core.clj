@@ -1,64 +1,65 @@
 (ns boolean-logic-simplifiers.test.core
-  (:require [boolean-logic-simplifiers.factory :as f])
+  (:require [boolean-logic-simplifiers.factory :as f]
+            [boolean-logic-simplifiers.factory-dsl :as fd])
   (:use [boolean-logic-simplifiers.core]
         [clojure.test]))
 
 (defn v 
   "Short helper to create a value condition."
   [v]
-  (f/= :v v))
+  (fd/= :v v))
 
 ; None of these conditions should be changed by the and simplifier
 (deftest test-and-simplifier-none-required
   (are [c] (= c (and-simplify c))
        (v 1)
-       (f/or (v 1) (v 2))
-       (f/and (v 1) (v 2))
-       (f/and (v 1) (f/or (v 2) (v 3)))))
+       (fd/or (v 1) (v 2))
+       (fd/and (v 1) (v 2))
+       (fd/and (v 1) (fd/or (v 2) (v 3)))))
 
 (deftest test-and-simplifier-within-or
-  (is (= (f/or 
+  (is (= (fd/or 
            (v 4) 
-           (f/or 
+           (fd/or 
              (v 6)
-             (f/and 
+             (fd/and 
                (v 1) 
                (v 2) 
                (v 3))))
          (and-simplify
-           (f/or
+           (fd/or
              (v 4) 
-             (f/or 
+             (fd/or 
                (v 6)
-               (f/and 
+               (fd/and 
                  (v 1) 
-                 (f/and
+                 (fd/and
                    (v 2)
                    (v 3)))))))))
 
 (deftest test-and-simplifier-single-level
-  (is (= (f/and 
+  (is (= (fd/and 
            (v 1) 
            (v 2) 
            (v 3))
          (and-simplify 
-           (f/and 
+           (fd/and 
              (v 1) 
-             (f/and
+             (fd/and
                (v 2)
                (v 3)))))))
 
 (deftest test-and-simplifier-many-nested
-  (is (= (f/and 
+  (is (= (fd/and 
            (v 1) 
            (v 2) 
            (v 3)
            (v 4))
          (and-simplify 
-           (f/and 
+           (fd/and 
              (v 1) 
-             (f/and 
+             (fd/and 
                (v 2) 
-               (f/and 
+               (fd/and 
                  (v 3) 
                  (v 4))))))))
